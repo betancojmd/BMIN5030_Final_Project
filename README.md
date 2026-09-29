@@ -1,4 +1,4 @@
-i# JUAN's Final Project Peritoneal Dialysis - class BMIN5030
+# JUAN's Final Project Peritoneal Dialysis for class BMIN5030
 
 This repository contains templates for the final written report and GitHub repository. Follow the instructions below to clone this repository, and then turn in your final project's code via a pull request to this repository.
 
