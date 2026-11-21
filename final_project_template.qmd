@@ -10,11 +10,13 @@ embed-resources: true
 
 ------------------------------------------------------------------------
 
-## Overview {#sec-overview}
+## 1. Overview {#sec-overview}
 
 Peritoneal dialysis (PD) is associated with improved patient autonomy, quality of life, and lower healthcare utilization in selected populations. Despite these advantages, only a minority of U.S. patients with end-stage kidney disease initiate PD  (\~ 12%). Patients who start on hemodialysis and subsequently transition to PD ("PD-switch") represent a particularly important subgroup, as prior studies suggest they may experience higher risks of technique failure and mortality compared with patients who initiate dialysis directly with PD. Understanding sociodemographic factors associated with initial dialysis modality pathway may identify potentially modifiable barriers to PD uptake and inform future quality improvement interventions.
 
-## Introduction {#sec-introduction}
+Repo Link: <https://github.com/betancojmd/BMIN5030_Final_Project/tree/juan_project>
+
+## 2. Introduction {#sec-introduction}
 
 Few studies have examined sociodemographic factors associated with the pathway by which patients ultimately receive peritoneal dialysis. Most prior research has focused on clinical outcomes after PD initiation rather than factors influencing whether patients begin dialysis with PD or transition from hemodialysis later.
 
@@ -22,17 +24,51 @@ This project leverages a contemporary institutional PD registry to identify pote
 
 My hypothesis is that patients initiating dialysis directly with PD differ from patients who transition from hemodialysis to PD with respect to sociodemographic characteristics, including age, race, ethnicity, employment status, mobility, and prior nephrology care.
 
-## Methods {#sec-methods}
+## 3. Statistical Methods {#sec-methods}
 
-**Source data:** Electronic Health Records (EPIC). Data were obtained from a de-identified registry developed for a quality improvement initiative approved by the University of Pennsylvania Institutional Review Board on March 11, 2025.
+**Source data:** Electronic Health Records (EPIC) and [CMS-2728 Form](https://www.cms.gov/medicare/cms-forms/cms-forms/cms-forms-items/cms008867) (End Stage Renal Disease Medical Evidence Report). Data were obtained from a de-identified registry developed for a quality improvement initiative approved by the University of Pennsylvania Institutional Review Board on March 11, 2025.
 
-**Subjects/Cohort:** All adult patients receiving peritoneal dialysis within the University of Pennsylvania renal practice between January 1, 2025 and December 31, 2025 (N = 95).
+**Subjects/Cohort:** All adult patients receiving peritoneal dialysis within the University of Pennsylvania renal practice between January 1, 2025 and December 31, 2025 (N = 91).
 
 **Variables used in the analysis:** Age, Sex, Race, Ethnicity, ZIP code, Employment status at dialysis initiation, Mobility status at dialysis initiation, Established outpatient nephrology care before dialysis initiation, Dialysis access at initiation, Dialysis vintage.
 
-**Study design:** Retrospective observational cohort study and quality improvement project based on electronic health record review
+**Study design:** Retrospective observational cohort study and quality improvement project based on electronic health record review.
 
 **Primary Outcome:** Dialysis initiation pathway: PD-first (direct initiation with peritoneal dialysis) vs PD-switch (transition from in-center hemodialysis to peritoneal dialysis).
+
+```{r}
+#Will all relevant R packages:
+suppressPackageStartupMessages({
+  library(readxl)
+  library(janitor)
+  library(dplyr)
+  library(sf)
+  library(tidyverse)
+  library(tigris)
+  library(leaflet)
+  library(tidycensus)
+  library(ggplot2)
+  library(randomForest)
+  library(tidymodels)
+})
+census_api_key("220cb8f2da8ccc2b8c5b42f848f56780914dbfc9", install = TRUE, overwrite = TRUE)
+```
+
+```{r}
+#Will import and clean data from excel raw file with read_excel function, including function arguments na (to identify missing data), and remove_empty (to drop blank columns/rows)
+
+PD_data <- read_excel(
+  path = "C:/Users/nataj/Downloads/Final Project Raw data deidentified.xlsx",
+  sheet = 1,                  
+  na = c("", "NA", "N/A"),    
+  skip = 0                    
+) %>%
+  clean_names() %>%           
+  remove_empty(c("rows", "cols"))
+
+#Will view tibble sample of data frame to confirm this worked:
+head(tibble(PD_data))
+```
 
 **Statistical Analysis:** Baseline characteristics compared between PD-first and PD-switch populations.
 
@@ -40,10 +76,7 @@ My hypothesis is that patients initiating dialysis directly with PD differ from 
 
 **Multivariable Analysis:** A logistic regression model will be developed to identify independent sociodemographic factors associated with PD-first versus PD-switch status. Given the modest sample size, the number of variables included in multivariable models will be limited to avoid overfitting. Results will be reported as: odds ratios (OR), 95% confidence intervals (CI), p-values
 
-## Results {#sec-results}
-
-Nov 21 2026
-
+## 4. Results {#sec-results}
 Describe your results and include relevant tables, plots, and code/comments used to obtain them. You may refer to the @sec-methods as needed. End with a brief conclusion of your findings related to the question you set out to address. You can include references if you'd like, but this is not required.
 
 ## Conclusion
