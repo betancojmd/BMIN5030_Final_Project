@@ -68,6 +68,7 @@ PD_data <- read_excel(
 
 #Will view tibble sample of data frame to confirm this worked:
 head(tibble(PD_data))
+View(PD_data)
 ```
 
 **Statistical Analysis:** Baseline characteristics compared between PD-first and PD-switch populations.
