@@ -7,7 +7,9 @@ editor: visual
 number-sections: true
 embed-resources: true
 ---
---------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
 ## 1. Overview {#sec-overview}
 
 Peritoneal dialysis (PD) is associated with improved patient autonomy, quality of life, and lower healthcare utilization in selected populations. Despite these advantages, only a minority of U.S. patients with end-stage kidney disease initiate PD  (\~ 12%). Patients who start on hemodialysis and subsequently transition to PD ("PD-switch") represent a particularly important subgroup, as prior studies suggest they may experience higher risks of technique failure and mortality compared with patients who initiate dialysis directly with PD. Understanding sociodemographic factors associated with initial dialysis modality pathway may identify potentially modifiable barriers to PD uptake and inform future quality improvement interventions.
@@ -23,7 +25,8 @@ This project leverages a contemporary institutional PD registry to identify pote
 My hypothesis is that patients initiating dialysis directly with PD differ from patients who transition from hemodialysis to PD with respect to sociodemographic characteristics, including age, race, ethnicity, employment status, mobility, and prior nephrology care.
 
 ## 3. Methods {#sec-methods}
-## 3.1 Data {#sec-data}
+
+## 3.1 Data (Information Retrieval) {#sec-data}
 
 **Data source:** Electronic Health Records (EPIC) and [CMS-2728 Form](https://www.cms.gov/medicare/cms-forms/cms-forms/cms-forms-items/cms008867) (End Stage Renal Disease Medical Evidence Report) which provides a snapshot of individuals with ESRD AT THE TIME OF DIALYSIS INITIATION. Data were obtained from a de-identified registry developed for a quality improvement initiative approved by the University of Pennsylvania Institutional Review Board on March 11, 2025.
 
@@ -61,45 +64,68 @@ pd_data <- read_excel(
 
 #Will create a sample tibble of data frame and summarize to confirm it  worked:
 head(tibble(pd_data))
+names(pd_data)
 ```
 
 ## 3.2 Variables and Data Dictionary {#sec-variables}
-**Quantitative**
-**Discrete**
+
+**Quantitative** **Discrete**
+
 -Age (whole years)
+
 -Dialysis Vintage (whole years)
 
-**Categorical**
-**Nominal**
+**Categorical** **Nominal**
+
 -Dialysis Unit (n=3)
+
 -Race (0:American Indian or Alaska Native, 1: Asian, 2:Black or African American, 3:Middle Eastern or North African, 4:Native Hawaiian or Pacific Islander, 5: White, 6:Multiracial, 7:Other/unknown)
+
 -ZIP code
+
 -Prior or Current employment at dialysis initiation (0.unemployed 1.Full Time 2.Part Time 3.Homemaker 4.Retired due to age/preference 5.Retired (Disability) 6.Medical Leave 7.Student)
--Dialysis access (0.AVF 1.AVG 2.Catheter 3.Other 4. PDC)
--Dialysis setting (0. Home 1.Dialysis facility 3.SNF/LTAC)
+
+-Dialysis access (0.AVF 1.AVG 2.Catheter 3.Other 4. PDC) -Dialysis setting (0. Home 1.Dialysis facility 3.SNF/LTAC)
+
 -Dialysis type (0. Hemodialysis 1.CAPD 2. CCPD 3.Other)
--Type of home dialysis training	(0. HHD 1. ICHD 2. CAPD 3. CCPD 4. Other 5.PD (not specified if CAPD or CCPD)
+
+-Type of home dialysis training (0. HHD 1. ICHD 2. CAPD 3. CCPD 4. Other 5.PD (not specified if CAPD or CCPD)
+
+-Nephrologist (n=17)
 
 **Ordinal**
+
 -Established nephrologist (0.No 1.Yes 2.Unknown)
--Time with Nephrologist (0. <6mo 1.6-12 mo 2.>12mo 3.not applicable)
--Nephrologist (n=17)
--Co-morbid conditions (0.inability to ambulate 1. inability to transfer 2.needs assistance with  daily activities 3. institutionalized 4.vision impairment 5. drug dependence 6.none of the above)
+
+-Time with Nephrologist (0. \<6mo 1.6-12 mo 2.\>12mo 3.not applicable)
+
+-Co-morbid conditions (0.inability to ambulate 1. inability to transfer 2.needs assistance with daily activities 3. institutionalized 4.vision impairment 5. drug dependence 6.none of the above)
 
 **Binary**
--Sex assigned at birth (0.Male, 1.Female)
--Ethnicity (0:Non-Hispanic, 1:Hispanic)
--Medicare application? (0.No 1.Yes)
--Transplant informartion provided?	(0.No 1.Yes)
 
-## 3.3 Data cleaning {#sec-data cleaning}
+-Sex assigned at birth (0.Male, 1.Female)
+
+-Ethnicity (0:Non-Hispanic, 1:Hispanic)
+
+-Medicare application? (0.No 1.Yes)
+
+-Transplant information provided? (0.No 1.Yes)
+
+## 3.3 Data cleaning 
 
 ```{r}
 #Will first summarize variable names, types and first few values
-str(pd_data)
+#str(pd_data)
+
+#Given that many categorical variables showed as numeric and viceversa, had to transform them appropriately
+
+pd <- pd_data %>% mutate(across(c(dialysis_unit,sex,race,ethnicity,medicare_application,prior_employement,current_employement,co_morbid_conditions,nephrologist,time_nephrologist,access,dialysis_setting,dialysis_type,kidney_txp_information,name_nephrologist,type_of_training), as.factor))
+
+#Then will use summary function to visualize snapshot of data
+summary(pd)
 ```
 
-## 3.4 Statistical Methods {#sec-Statistical Methods}
+## 3.4 Statistical Methods  
 
 **Study design:** Retrospective observational cohort study and quality improvement project based on electronic health record review.
 
@@ -124,6 +150,7 @@ str(pd_data)
 ```
 
 ## 4. Results {#sec-results}
+
 Describe your results and include relevant tables, plots, and code/comments used to obtain them. You may refer to the @sec-methods as needed. End with a brief conclusion of your findings related to the question you set out to address. You can include references if you'd like, but this is not required.
 
 ```{r}
