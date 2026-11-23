@@ -7,9 +7,7 @@ editor: visual
 number-sections: true
 embed-resources: true
 ---
-
-------------------------------------------------------------------------
-
+--------------------------------------------------------------------
 ## 1. Overview {#sec-overview}
 
 Peritoneal dialysis (PD) is associated with improved patient autonomy, quality of life, and lower healthcare utilization in selected populations. Despite these advantages, only a minority of U.S. patients with end-stage kidney disease initiate PD  (\~ 12%). Patients who start on hemodialysis and subsequently transition to PD ("PD-switch") represent a particularly important subgroup, as prior studies suggest they may experience higher risks of technique failure and mortality compared with patients who initiate dialysis directly with PD. Understanding sociodemographic factors associated with initial dialysis modality pathway may identify potentially modifiable barriers to PD uptake and inform future quality improvement interventions.
@@ -24,17 +22,12 @@ This project leverages a contemporary institutional PD registry to identify pote
 
 My hypothesis is that patients initiating dialysis directly with PD differ from patients who transition from hemodialysis to PD with respect to sociodemographic characteristics, including age, race, ethnicity, employment status, mobility, and prior nephrology care.
 
-## 3. Statistical Methods {#sec-methods}
+## 3. Methods {#sec-methods}
+## 3.1 Data {#sec-data}
 
-**Source data:** Electronic Health Records (EPIC) and [CMS-2728 Form](https://www.cms.gov/medicare/cms-forms/cms-forms/cms-forms-items/cms008867) (End Stage Renal Disease Medical Evidence Report). Data were obtained from a de-identified registry developed for a quality improvement initiative approved by the University of Pennsylvania Institutional Review Board on March 11, 2025.
+**Data source:** Electronic Health Records (EPIC) and [CMS-2728 Form](https://www.cms.gov/medicare/cms-forms/cms-forms/cms-forms-items/cms008867) (End Stage Renal Disease Medical Evidence Report) which provides a snapshot of individuals with ESRD AT THE TIME OF DIALYSIS INITIATION. Data were obtained from a de-identified registry developed for a quality improvement initiative approved by the University of Pennsylvania Institutional Review Board on March 11, 2025.
 
 **Subjects/Cohort:** All adult patients receiving peritoneal dialysis within the University of Pennsylvania renal practice between January 1, 2025 and December 31, 2025 (N = 91).
-
-**Variables used in the analysis:** Age, Sex, Race, Ethnicity, ZIP code, Employment status at dialysis initiation, Mobility status at dialysis initiation, Established outpatient nephrology care before dialysis initiation, Dialysis access at initiation, Dialysis vintage.
-
-**Study design:** Retrospective observational cohort study and quality improvement project based on electronic health record review.
-
-**Primary Outcome:** Dialysis initiation pathway: PD-first (direct initiation with peritoneal dialysis) vs PD-switch (transition from in-center hemodialysis to peritoneal dialysis).
 
 ```{r}
 #Will all relevant R packages:
@@ -57,7 +50,7 @@ census_api_key("220cb8f2da8ccc2b8c5b42f848f56780914dbfc9", install = TRUE, overw
 ```{r}
 #Will import and clean data from excel raw file with read_excel function, including function arguments na (to identify missing data), and remove_empty (to drop blank columns/rows)
 
-PD_data <- read_excel(
+pd_data <- read_excel(
   path = "C:/Users/nataj/Downloads/Final Project Raw data deidentified.xlsx",
   sheet = 1,                  
   na = c("", "NA", "N/A"),    
@@ -66,19 +59,76 @@ PD_data <- read_excel(
   clean_names() %>%           
   remove_empty(c("rows", "cols"))
 
-#Will view tibble sample of data frame to confirm this worked:
-head(tibble(PD_data))
-View(PD_data)
+#Will create a sample tibble of data frame and summarize to confirm it  worked:
+head(tibble(pd_data))
 ```
+
+## 3.2 Variables and Data Dictionary {#sec-variables}
+**Quantitative**
+**Discrete**
+-Age (whole years)
+-Dialysis Vintage (whole years)
+
+**Categorical**
+**Nominal**
+-Dialysis Unit (n=3)
+-Race (0:American Indian or Alaska Native, 1: Asian, 2:Black or African American, 3:Middle Eastern or North African, 4:Native Hawaiian or Pacific Islander, 5: White, 6:Multiracial, 7:Other/unknown)
+-ZIP code
+-Prior or Current employment at dialysis initiation (0.unemployed 1.Full Time 2.Part Time 3.Homemaker 4.Retired due to age/preference 5.Retired (Disability) 6.Medical Leave 7.Student)
+-Dialysis access (0.AVF 1.AVG 2.Catheter 3.Other 4. PDC)
+-Dialysis setting (0. Home 1.Dialysis facility 3.SNF/LTAC)
+-Dialysis type (0. Hemodialysis 1.CAPD 2. CCPD 3.Other)
+-Type of home dialysis training	(0. HHD 1. ICHD 2. CAPD 3. CCPD 4. Other 5.PD (not specified if CAPD or CCPD)
+
+**Ordinal**
+-Established nephrologist (0.No 1.Yes 2.Unknown)
+-Time with Nephrologist (0. <6mo 1.6-12 mo 2.>12mo 3.not applicable)
+-Nephrologist (n=17)
+-Co-morbid conditions (0.inability to ambulate 1. inability to transfer 2.needs assistance with  daily activities 3. institutionalized 4.vision impairment 5. drug dependence 6.none of the above)
+
+**Binary**
+-Sex assigned at birth (0.Male, 1.Female)
+-Ethnicity (0:Non-Hispanic, 1:Hispanic)
+-Medicare application? (0.No 1.Yes)
+-Transplant informartion provided?	(0.No 1.Yes)
+
+## 3.3 Data cleaning {#sec-data cleaning}
+
+```{r}
+#Will first summarize variable names, types and first few values
+str(pd_data)
+```
+
+## 3.4 Statistical Methods {#sec-Statistical Methods}
+
+**Study design:** Retrospective observational cohort study and quality improvement project based on electronic health record review.
+
+**Primary Outcome:** Dialysis initiation pathway: PD-first (direct initiation with peritoneal dialysis) vs PD-switch (transition from in-center hemodialysis to peritoneal dialysis).
 
 **Statistical Analysis:** Baseline characteristics compared between PD-first and PD-switch populations.
 
+```{r}
+#
+```
+
 **Univariate Analysis:** a) Continuous variables: Mean ± standard deviation or median (IQR), Student's t-test, b) Categorical variables: Frequencies and percentages, Chi-square test or Fisher's exact test
+
+```{r}
+#
+```
 
 **Multivariable Analysis:** A logistic regression model will be developed to identify independent sociodemographic factors associated with PD-first versus PD-switch status. Given the modest sample size, the number of variables included in multivariable models will be limited to avoid overfitting. Results will be reported as: odds ratios (OR), 95% confidence intervals (CI), p-values
 
+```{r}
+#
+```
+
 ## 4. Results {#sec-results}
 Describe your results and include relevant tables, plots, and code/comments used to obtain them. You may refer to the @sec-methods as needed. End with a brief conclusion of your findings related to the question you set out to address. You can include references if you'd like, but this is not required.
+
+```{r}
+#
+```
 
 ## Conclusion
 
