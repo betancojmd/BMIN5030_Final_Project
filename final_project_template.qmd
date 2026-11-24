@@ -32,6 +32,10 @@ My hypothesis is that patients initiating dialysis directly with PD differ from 
 
 **Subjects/Cohort:** All adult patients receiving peritoneal dialysis within the University of Pennsylvania renal practice between January 1, 2025 and December 31, 2025 (N = 91).
 
+**Study design:** Retrospective observational cohort study and quality improvement project based on electronic health record review.
+
+**Primary Outcome:** Dialysis initiation pathway: PD-first (direct initiation with peritoneal dialysis) vs PD-switch (transition from in-center hemodialysis to peritoneal dialysis).
+
 ```{r}
 #Will all relevant R packages:
 suppressPackageStartupMessages({
@@ -46,6 +50,9 @@ suppressPackageStartupMessages({
   library(ggplot2)
   library(randomForest)
   library(tidymodels)
+  library(gtsummary)
+  library(xfun)
+  library(lubridate)
 })
 census_api_key("220cb8f2da8ccc2b8c5b42f848f56780914dbfc9", install = TRUE, overwrite = TRUE)
 ```
@@ -73,7 +80,7 @@ names(pd_data)
 
 -Age (whole years)
 
--Dialysis Vintage (whole years)
+-Total Dialysis Vintage and PD Vintage (whole years)
 
 **Categorical** **Nominal**
 
@@ -111,7 +118,7 @@ names(pd_data)
 
 -Transplant information provided? (0.No 1.Yes)
 
-## 3.3 Data cleaning 
+## 3.3 Data cleaning
 
 ```{r}
 #Will first summarize variable names, types and first few values
@@ -120,21 +127,56 @@ names(pd_data)
 #Given that many categorical variables showed as numeric and viceversa, had to transform them appropriately
 
 pd <- pd_data %>% mutate(across(c(dialysis_unit,sex,race,ethnicity,medicare_application,prior_employement,current_employement,co_morbid_conditions,nephrologist,time_nephrologist,access,dialysis_setting,dialysis_type,kidney_txp_information,name_nephrologist,type_of_training), as.factor))
-
-#Then will use summary function to visualize snapshot of data
-summary(pd)
 ```
 
-## 3.4 Statistical Methods  
+```{r}
+#initially I attempted using the tidyr::drop_na() command to get a set of complete cases for a dataset (dropping all samples with missing data), however this dropped sample population in half (n=91) down to (n=46) so decided to keep original data frame with missing values for the analysis
+complete.pd <- drop_na(pd)
+```
 
-**Study design:** Retrospective observational cohort study and quality improvement project based on electronic health record review.
+```{r}       
+#In order to calculate total dialysis vintage and peritoneal dialysis vintage in years will use dplyr and lubridate packages 
 
-**Primary Outcome:** Dialysis initiation pathway: PD-first (direct initiation with peritoneal dialysis) vs PD-switch (transition from in-center hemodialysis to peritoneal dialysis).
+#First will confirm that the dialysis initiation dates were not date objects but  POSIXct 
+
+class(pd$date_chronic_dialysis_initiated)
+head(pd$date_chronic_dialysis_initiated)
+
+#Then had to  strip the time component and convert them cleanly into standard Date objects.
+
+pd <- pd %>%
+  mutate(
+    date_chronic_dialysis_initiated = as.Date(date_chronic_dialysis_initiated),
+    home_dialysis_date_training_pdc_placement = as.Date(home_dialysis_date_training_pdc_placement))
+    
+#Then will Calculate vintage in years  by taking the time interval between each start date and December 31, 2025.
+pd <- pd %>%
+    mutate(
+    total_dialysis_vintage = time_length(
+      interval(date_chronic_dialysis_initiated, as.Date("2025-12-31")), 
+      unit = "years"
+    ),
+    pd_vintage = time_length(
+      interval(home_dialysis_date_training_pdc_placement, as.Date("2025-12-31")), 
+      unit = "years"
+    )
+  )
+
+#Then will use summary function to visualize snapshot of these new variables
+head(tibble(pd$total_dialysis_vintage))
+head(tibble(pd$pd_vintage))
+
+```
+
+)
+
+## 3.4 Statistical Methods
 
 **Statistical Analysis:** Baseline characteristics compared between PD-first and PD-switch populations.
 
 ```{r}
-#
+#For descriptive statistics initially I created a "Table 1" of summary statistics for the studied population wih the tbl_summary() function of the gtsummary package, except project_id_number  nor zip_code.
+pd |> tbl_summary(include = -c(project_id_number,zip_code,date_chronic_dialysis_initiated,home_dialysis_date_training_pdc_placement,home_dialysis_training_completed,name_nephrologist))
 ```
 
 **Univariate Analysis:** a) Continuous variables: Mean ± standard deviation or median (IQR), Student's t-test, b) Categorical variables: Frequencies and percentages, Chi-square test or Fisher's exact test
