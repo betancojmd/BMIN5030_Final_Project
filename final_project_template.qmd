@@ -76,25 +76,27 @@ names(pd_data)
 
 ## 3.2 Variables and Data Dictionary {#sec-variables}
 
+**Quantitative Continuous**
+
+-Total Dialysis Vintage and PD Vintage (exact years)
+
 **Quantitative** **Discrete**
 
 -Age (whole years)
 
--Total Dialysis Vintage and PD Vintage (whole years)
-
 **Categorical** **Nominal**
+
+-First Dialysis Modality: PD first (CAPD or CCPD) vs PD switch (ICHD) (0. Hemodialysis 1.CAPD 2. CCPD 3.Other)
+
+-ZIP code
 
 -Dialysis Unit (n=3)
 
 -Race (0:American Indian or Alaska Native, 1: Asian, 2:Black or African American, 3:Middle Eastern or North African, 4:Native Hawaiian or Pacific Islander, 5: White, 6:Multiracial, 7:Other/unknown)
 
--ZIP code
-
 -Prior or Current employment at dialysis initiation (0.unemployed 1.Full Time 2.Part Time 3.Homemaker 4.Retired due to age/preference 5.Retired (Disability) 6.Medical Leave 7.Student)
 
 -Dialysis access (0.AVF 1.AVG 2.Catheter 3.Other 4. PDC) -Dialysis setting (0. Home 1.Dialysis facility 3.SNF/LTAC)
-
--Dialysis type (0. Hemodialysis 1.CAPD 2. CCPD 3.Other)
 
 -Type of home dialysis training (0. HHD 1. ICHD 2. CAPD 3. CCPD 4. Other 5.PD (not specified if CAPD or CCPD)
 
@@ -124,17 +126,19 @@ names(pd_data)
 #Will first summarize variable names, types and first few values
 #str(pd_data)
 
-#Given that many categorical variables showed as numeric and viceversa, had to transform them appropriately
+#Had to recode dialysis_type variable into PD first vs PD switch 
 
-pd <- pd_data %>% mutate(across(c(dialysis_unit,sex,race,ethnicity,medicare_application,prior_employement,current_employement,co_morbid_conditions,nephrologist,time_nephrologist,access,dialysis_setting,dialysis_type,kidney_txp_information,name_nephrologist,type_of_training), as.factor))
-```
+pd <- pd_data %>%
+  mutate(
+    dialysis_type = case_when(
+      dialysis_type == 0 ~ "PD switch",
+      dialysis_type %in% c(1, 2) ~ "PD first",
+      TRUE ~ NA_character_
+    ),
+    dialysis_type = factor(dialysis_type, levels = c("PD first", "PD switch"))
+  )
 
-```{r}
-#initially I attempted using the tidyr::drop_na() command to get a set of complete cases for a dataset (dropping all samples with missing data), however this dropped sample population in half (n=91) down to (n=46) so decided to keep original data frame with missing values for the analysis
-complete.pd <- drop_na(pd)
-```
 
-```{r}       
 #In order to calculate total dialysis vintage and peritoneal dialysis vintage in years will use dplyr and lubridate packages 
 
 #First will confirm that the dialysis initiation dates were not date objects but  POSIXct 
@@ -168,7 +172,18 @@ head(tibble(pd$pd_vintage))
 
 ```
 
-)
+```{r}
+
+#Given that many categorical variables showed as numeric and viceversa, had to transform them appropriately
+
+pd_clean <- pd %>% mutate(across(c(dialysis_unit,sex,race,ethnicity,medicare_application,prior_employement,current_employement,co_morbid_conditions,nephrologist,time_nephrologist,access,dialysis_setting,dialysis_type,kidney_txp_information,name_nephrologist,type_of_training), as.factor))
+
+
+```
+
+```{r}
+#initially I attempted using the tidyr::drop_na() command to get a set of complete cases for a dataset (dropping all samples with missing data), however this dropped sample population in half (n=91) down to (n=46) so decided to keep original data frame with missing values for the analysis
+```
 
 ## 3.4 Statistical Methods
 
@@ -176,7 +191,7 @@ head(tibble(pd$pd_vintage))
 
 ```{r}
 #For descriptive statistics initially I created a "Table 1" of summary statistics for the studied population wih the tbl_summary() function of the gtsummary package, except project_id_number  nor zip_code.
-pd |> tbl_summary(include = -c(project_id_number,zip_code,date_chronic_dialysis_initiated,home_dialysis_date_training_pdc_placement,home_dialysis_training_completed,name_nephrologist))
+pd_clean |> tbl_summary(include = -c(project_id_number,zip_code,date_chronic_dialysis_initiated,home_dialysis_date_training_pdc_placement,home_dialysis_training_completed,name_nephrologist))
 ```
 
 **Univariate Analysis:** a) Continuous variables: Mean ± standard deviation or median (IQR), Student's t-test, b) Categorical variables: Frequencies and percentages, Chi-square test or Fisher's exact test
