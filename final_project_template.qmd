@@ -60,18 +60,17 @@ census_api_key("220cb8f2da8ccc2b8c5b42f848f56780914dbfc9", install = TRUE, overw
 ```{r}
 #Will import and clean data from excel raw file with read_excel function, including function arguments na (to identify missing data), and remove_empty (to drop blank columns/rows)
 
-pd_data <- read_excel(
+pd <- read_excel(
   path = "C:/Users/nataj/Downloads/Final Project Raw data deidentified.xlsx",
-  sheet = 1,                  
-  na = c("", "NA", "N/A"),    
-  skip = 0                    
+  sheet = 1,
+  na = c("", "NA", "N/A", "NULL", "."),
+  skip = 0
 ) %>%
-  clean_names() %>%           
+  clean_names() %>%
   remove_empty(c("rows", "cols"))
 
 #Will create a sample tibble of data frame and summarize to confirm it  worked:
-head(tibble(pd_data))
-names(pd_data)
+head(tibble(pd))
 ```
 
 ## 3.2 Variables and Data Dictionary {#sec-variables}
@@ -112,7 +111,7 @@ names(pd_data)
 
 **Binary**
 
--Sex assigned at birth (0.Male, 1.Female)
+-Sex self reported (0.Male, 1.Female)
 
 -Ethnicity (0:Non-Hispanic, 1:Hispanic)
 
@@ -123,12 +122,13 @@ names(pd_data)
 ## 3.3 Data cleaning
 
 ```{r}
-#Will first summarize variable names, types and first few values
-#str(pd_data)
+#Will first summarize variable names
+names(pd)
 
 #Had to recode dialysis_type variable into PD first vs PD switch 
+#View(pd)
 
-pd <- pd_data %>%
+pd <- pd %>%
   mutate(
     dialysis_type = case_when(
       dialysis_type == 0 ~ "PD switch",
@@ -138,7 +138,279 @@ pd <- pd_data %>%
     dialysis_type = factor(dialysis_type, levels = c("PD first", "PD switch"))
   )
 
+pd <- pd %>%
+  mutate(
+     sex = case_when(
+      sex == 0 ~ "Male",
+      sex %in% c(1) ~ "Female",
+      TRUE ~ NA_character_
+    ),
+    sex = factor(sex, levels = c("Male", "Female"))
+  )
 
+pd <- pd %>%
+  mutate(
+     medicare_application = case_when(
+      medicare_application == 0 ~ "No",
+      medicare_application %in% c(1) ~ "Yes",
+      TRUE ~ NA_character_
+    ),
+    medicare_application = factor(sex, levels = c("No", "Yes"))
+  )
+
+pd <- pd %>%
+  mutate(
+    ethnicity = case_when(
+      ethnicity == 0 ~ "Non-Hispanic",
+      ethnicity == 1 ~ "Hispanic",
+      TRUE ~ NA_character_
+    ),
+    ethnicity = factor(
+      ethnicity,
+      levels = c("Hispanic", "Non-Hispanic")
+    )
+  )
+
+pd <- pd %>%
+  mutate(
+    race = case_when(
+      race == 0 ~ "American Indian",
+      race == 1 ~ "Asian",
+      race == 2 ~ "Black",
+      race == 3 ~ "Middle Eastern",
+      race == 4 ~ "Native Hawaiian",
+      race == 5 ~ "White",
+      race == 6 ~ "Multiracial",
+      race == 7 ~ "Other",
+      TRUE ~ NA_character_
+    ),
+    race = factor(
+      race,
+      levels = c(
+        "American Indian",  
+        "Asian",
+        "Black",
+        "Middle Eastern",
+        "Native Hawaiian",
+        "White",
+        "Multiracial",
+        "Other"
+      )
+    )
+  )
+
+pd <- pd %>%
+  mutate(
+    access = case_when(
+      access == 0 ~ "AVF",
+      access == 1 ~ "AVG",
+      access == 2 ~ "Catheter",
+      access == 3 ~ "Other",
+      access == 4 ~ "PDC",
+      access == 5 ~ "Unknown",
+      TRUE ~ NA_character_
+    ),
+    access = factor(
+      access,
+      levels = c(
+        "AVF",
+        "AVG",
+        "Catheter",
+        "Other",
+        "PDC",
+        "Unknown"
+      )
+    )
+  )
+```
+```{r}
+pd <- pd %>%
+  mutate(
+    nephrologist = case_when(
+      nephrologist == 0 ~ "No",
+      nephrologist == 1 ~ "Yes",
+      nephrologist == 2 ~ "Unknown",
+      TRUE ~ NA_character_
+    ),
+    nephrologist = factor(
+      nephrologist,
+      levels = c(
+        "No",
+        "Yes",
+        "Unknown"
+      )
+    )
+  )
+
+pd <- pd %>%
+  mutate(
+    kidney_txp_information = case_when(
+      kidney_txp_information == 0 ~ "No",
+      kidney_txp_information == 1 ~ "Yes",
+      kidney_txp_information == 2 ~ "Unknown",
+      TRUE ~ NA_character_
+    ),
+      kidney_txp_information = factor(
+      kidney_txp_information,
+      levels = c(
+        "No",
+        "Yes",
+        "Unknown"
+      )
+    )
+  )
+
+pd <- pd %>%
+  mutate(
+      dialysis_setting = case_when(
+      dialysis_setting == 0 ~ "Home",
+      dialysis_setting == 1 ~ "Dialysis facility",
+      dialysis_setting == 2 ~ "SNF/LTAC",
+      TRUE ~ NA_character_
+    ),
+    dialysis_setting = factor(
+      dialysis_setting,
+      levels = c(
+        "Home",
+        "Dialysis facility",
+        "SNF/LTAC"
+      )
+    )
+  )
+
+pd <- pd %>%
+  mutate(
+    time_nephrologist = case_when(
+      time_nephrologist == 0 ~ "<6m",
+      time_nephrologist == 1 ~ "6-12m",
+      time_nephrologist == 2 ~ ">12m",
+      time_nephrologist == 3 ~ "NA",
+      time_nephrologist == 4 ~ "unknown",
+            TRUE ~ NA_character_
+    ),
+    time_nephrologist = factor(
+      time_nephrologist,
+      levels = c(
+        "<6m",
+        "6/12m",
+        ">12m",
+        "unknown"
+      )
+    )
+  )
+
+pd <- pd %>%
+  mutate(
+    type_of_training = case_when(
+      type_of_training == 0 ~ "HHD",
+      type_of_training == 1 ~ "ICHD",
+      type_of_training == 2 ~ "CAPD",
+      type_of_training == 3 ~ "CCPD",
+      type_of_training == 4 ~ "other",
+      type_of_training == 5 ~ "PD",
+      TRUE ~ NA_character_
+    ),
+    type_of_training = factor(
+      type_of_training,
+      levels = c(
+        "HHD",
+        "ICHD",
+        "CAPD",
+        "CCPD",
+        "Other",
+        "PD"
+      )
+    )
+  )
+```
+
+
+
+```{r}
+pd <- pd %>%
+  mutate(
+    co_morbid_conditions = case_when(
+      co_morbid_conditions == 0 ~ "Ambulates",
+      co_morbid_conditions == 1 ~ "Inability to transfer",
+      co_morbid_conditions == 2 ~ "Needs assistance",
+      co_morbid_conditions == 3 ~ "Institutionalized",
+      co_morbid_conditions == 4 ~ "Vision impaired",
+      co_morbid_conditions == 5 ~ "Drugs",
+      co_morbid_conditions == 6 ~ "Others",
+      TRUE ~ NA_character_
+    ),
+    co_morbid_conditions = factor(
+      co_morbid_conditions,
+      levels = c(
+      "Ambulates",
+      "Inability to transfer",
+      "Needs assistance",
+      "Institutionalized",
+      "Vision impaired",
+      "Drugs",
+      "Others"
+      )
+    )
+  )
+
+pd <- pd %>%
+  mutate(
+    prior_employement = case_when(
+      prior_employement == 0 ~ "unemployed",
+      prior_employement == 1 ~ "FT",
+      prior_employement == 2 ~ "PT",
+      prior_employement == 3 ~ "Home",
+      prior_employement == 4 ~ "Retired",
+      prior_employement == 5 ~ "Disability",
+      prior_employement == 6 ~ "Medical leave",
+      prior_employement == 7 ~ "Student",
+      TRUE ~ NA_character_
+    ),
+    prior_employement = factor(
+      prior_employement,
+      levels = c(
+     "unemployed",
+     "FT",
+     "PT",
+     "Home",
+     "Retired",
+    "Disability",
+    "Medical leave",
+    "Student"
+      )
+    )
+  )
+
+pd <- pd %>%
+  mutate(
+    current_employement = case_when(
+      current_employement == 0 ~ "unemployed",
+      current_employement == 1 ~ "FT",
+      current_employement == 2 ~ "PT",
+      current_employement == 3 ~ "Home",
+      current_employement == 4 ~ "Retired",
+      current_employement == 5 ~ "Disability",
+      current_employement == 6 ~ "Medical leave",
+      current_employement == 7 ~ "Student",
+      TRUE ~ NA_character_
+    ),
+    current_employement = factor(
+      current_employement,
+      levels = c(
+     "unemployed",
+     "FT",
+     "PT",
+     "Home",
+     "Retired",
+    "Disability",
+    "Medical leave",
+    "Student"
+      )
+    )
+  )
+```
+
+```{r}
 #In order to calculate total dialysis vintage and peritoneal dialysis vintage in years will use dplyr and lubridate packages 
 
 #First will confirm that the dialysis initiation dates were not date objects but  POSIXct 
@@ -152,10 +424,10 @@ pd <- pd %>%
   mutate(
     date_chronic_dialysis_initiated = as.Date(date_chronic_dialysis_initiated),
     home_dialysis_date_training_pdc_placement = as.Date(home_dialysis_date_training_pdc_placement))
-    
+
 #Then will Calculate vintage in years  by taking the time interval between each start date and December 31, 2025.
 pd <- pd %>%
-    mutate(
+  mutate(
     total_dialysis_vintage = time_length(
       interval(date_chronic_dialysis_initiated, as.Date("2025-12-31")), 
       unit = "years"
@@ -169,7 +441,6 @@ pd <- pd %>%
 #Then will use summary function to visualize snapshot of these new variables
 head(tibble(pd$total_dialysis_vintage))
 head(tibble(pd$pd_vintage))
-
 ```
 
 ```{r}
@@ -177,8 +448,6 @@ head(tibble(pd$pd_vintage))
 #Given that many categorical variables showed as numeric and viceversa, had to transform them appropriately
 
 pd_clean <- pd %>% mutate(across(c(dialysis_unit,sex,race,ethnicity,medicare_application,prior_employement,current_employement,co_morbid_conditions,nephrologist,time_nephrologist,access,dialysis_setting,dialysis_type,kidney_txp_information,name_nephrologist,type_of_training), as.factor))
-
-
 ```
 
 ```{r}
@@ -191,7 +460,18 @@ pd_clean <- pd %>% mutate(across(c(dialysis_unit,sex,race,ethnicity,medicare_app
 
 ```{r}
 #For descriptive statistics initially I created a "Table 1" of summary statistics for the studied population wih the tbl_summary() function of the gtsummary package, except project_id_number  nor zip_code.
-pd_clean |> tbl_summary(include = -c(project_id_number,zip_code,date_chronic_dialysis_initiated,home_dialysis_date_training_pdc_placement,home_dialysis_training_completed,name_nephrologist))
+pd_clean |>
+  tbl_summary(
+    by = dialysis_type,
+    include = -c(
+      project_id_number,
+      zip_code,
+      date_chronic_dialysis_initiated,
+      home_dialysis_date_training_pdc_placement,
+      home_dialysis_training_completed,
+      name_nephrologist
+    )
+  )
 ```
 
 **Univariate Analysis:** a) Continuous variables: Mean ± standard deviation or median (IQR), Student's t-test, b) Categorical variables: Frequencies and percentages, Chi-square test or Fisher's exact test
